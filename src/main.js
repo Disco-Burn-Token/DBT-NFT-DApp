@@ -9,27 +9,11 @@ let token_obj;
 //keeps track of if a user is logged in.
 let logged_in;
 
-//Tracks if user has a vote token
-var has_token = false;
-
-var voteamount1 = 0;
-var voteamount2 = 0;
-var voteamount3 = 0;
-var voteamount4 = 0;
-
-var vote_token_balance = 0;
-
-disableButtons();
-disableButtonsDown();
-
-//Auto - Refreshes wallet balances every 35 seconds
-var intervalId = window.setInterval(function() {
-    getVoteBalances();
-}, 15000);
+var nftMintCount = 0;
 
 var intervalId = window.setInterval(function() {
-    tokenCheck();
-}, 30000);
+    remainingNFT();
+}, 60000);
 
 //Called when site is loading.
 async function init() {
@@ -42,22 +26,25 @@ async function init() {
     //If User is logged in
     if (currentUser) {
         logged_in = true;
-        enableButtons();
         document.getElementById("login_button").innerText = "Logout";
         userAddress = currentUser.get('ethAddress');
         document.getElementById("current-wallet").innerText = "0x..." + userAddress.slice(38);
         setHelperData();
         console.log(global.user_profile.born);
         document.getElementById("logged_in_info").style.display = "block";
+        loading();
+        getBNBBalance();
+        getNFTAmounts();
+        remainingNFT();
+        document.getElementById("vote_token_1_button").removeAttribute("title")
     }
 
     //If user is not logged in
     else {
         logged_in = false;
-        disableButtons();
-        disableButtonsDown();
         document.getElementById("login_button").innerText = "Sign in with MetaMask";
         document.getElementById("logged_in_info").style.display = "none";
+        document.getElementById("vote_token_1_button").disabled = true;
     }
 }
 
@@ -67,45 +54,7 @@ async function setHelperData() {
     global.user_profile.balances = await Moralis.Web3API.account.getTokenBalances(options);
     global.user_profile.native_bal = await Moralis.Web3API.account.getNativeBalance(options);
 }
-//Controls the auto enable/disable of the buttons. Comment/uncomment based on how many cards you need. 
-function enableButtons() {
-    document.getElementById("vote_token_1_button").disabled = false;
-    document.getElementById("vote_token_2_button").disabled = false;
-    document.getElementById("vote_token_3_button").disabled = false;
-    document.getElementById("vote_token_4_button").disabled = false;
-    document.getElementById("vote_token_1_button").removeAttribute("title");
-    document.getElementById("vote_token_2_button").removeAttribute("title");
-    document.getElementById("vote_token_3_button").removeAttribute("title");
-    document.getElementById("vote_token_4_button").removeAttribute("title");
-}
 
-function disableButtons() {
-    document.getElementById("vote_token_1_button").disabled = true;
-    document.getElementById("vote_token_2_button").disabled = true;
-    document.getElementById("vote_token_3_button").disabled = true;
-    document.getElementById("vote_token_4_button").disabled = true;
-
-}
-
-function enableButtonsDown() {
-    document.getElementById("vote_token_1_down_button").disabled = false;
-    document.getElementById("vote_token_2_down_button").disabled = false;
-    document.getElementById("vote_token_3_down_button").disabled = false;
-    document.getElementById("vote_token_4_down_button").disabled = false;
-    document.getElementById("vote_token_1_down_button").removeAttribute("title");
-    document.getElementById("vote_token_2_down_button").removeAttribute("title");
-    document.getElementById("vote_token_3_down_button").removeAttribute("title");
-    document.getElementById("vote_token_4_down_button").removeAttribute("title");
-
-}
-
-function disableButtonsDown() {
-    document.getElementById("vote_token_1_down_button").disabled = true;
-    document.getElementById("vote_token_2_down_button").disabled = true;
-    document.getElementById("vote_token_3_down_button").disabled = true;
-    document.getElementById("vote_token_4_down_button").disabled = true;
-
-}
 async function login() {
     try {
         currentUser = Moralis.User.current();
@@ -114,9 +63,13 @@ async function login() {
             currentUser = await Moralis.authenticate();
             userAddress = currentUser.get('ethAddress');
             document.getElementById("current-wallet").innerText = "0x..." + userAddress.slice(38);
-            enableButtons();
-            tokenCheck();
+            loading();
+            getBNBBalance();
+            getNFTAmounts();
             setHelperData();
+            remainingNFT();
+            document.getElementById("vote_token_1_button").disabled = false;
+            document.getElementById("vote_token_1_button").removeAttribute("title");
         } else {
             logOut();
         }
@@ -133,11 +86,10 @@ async function login() {
 async function logOut() {
     currentUser = await Moralis.User.logOut();
     document.getElementById("login_button").innerText = "Sign in with Metamask";
-    disableButtons();
-    disableButtonsDown();
     document.getElementById("message").style.display = "none";
     document.getElementById("logged_in_info").style.display = "none";
-
+    document.getElementById("vote_token_1_button").disabled = true;
+    clearAmounts();
     logged_in = false;
 }
 
@@ -149,9 +101,12 @@ async function loginWC() {
             currentUser = await Moralis.authenticate({ provider: "walletconnect", chainId: 56 });
             userAddress = currentUser.get('ethAddress');
             document.getElementById("current-wallet").innerText = "0x..." + userAddress.slice(38);
-            enableButtons();
-            tokenCheck();
-            setHelperData();
+            loading();
+            getBNBBalance();
+            getNFTAmounts();
+            remainingNFT();
+            document.getElementById("vote_token_1_button").disabled = false;
+            document.getElementById("vote_token_1_button").removeAttribute("title");
         } else {
             logOutWC();
         }
@@ -169,589 +124,180 @@ async function loginWC() {
 async function logOutWC() {
     currentUser = await Moralis.User.logOut();
     document.getElementById("login_button_wc").innerText = "Sign in with WalletConnect";
-    disableButtons();
-    disableButtonsDown();
     document.getElementById("message").style.display = "none";
     document.getElementById("logged_in_info").style.display = "none";
-
+    document.getElementById("vote_token_1_button").disabled = true;
+    clearAmounts();
     logged_in = false;
 }
 
-async function tokenCheck() {
-    let currentBalances = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc' });
-    let currentBalancesFUD = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc' });
-    vote_token = currentBalances.filter(function(v) {
-        return v.token_address == 0x73Ae8e73cc8374a7e3A983637091624041E5B19D;
-    });
-    vote_token_down = currentBalancesFUD.filter(function(x) {
-        return x.token_address == 0x85998a72274fc3639d2367c49b426c1Ab3BE86A8;
-    });
-    if (vote_token.length != 0) {
-        has_token = true;
-        document.getElementById("message").style.display = "none";
-        vote_token_balance = (vote_token[0].balance);
-        document.getElementById("dvt-balance-current").innerText = vote_token_balance;
-        enableButtons();
-    } else if (vote_token.length == 0) {
-        vote_token_balance = 0;
-        document.getElementById("dvt-balance-current").innerText = vote_token_balance;
-        has_token = false;
-        disableButtons();
-        document.getElementById("vote_token_1_button").title = 'Insufficent DVT Balance';
-        document.getElementById("vote_token_2_button").title = 'Insufficent DVT Balance';
-        document.getElementById("vote_token_3_button").title = 'Insufficent DVT Balance';
-        document.getElementById("vote_token_4_button").title = 'Insufficent DVT Balance';
-    }
-    if (vote_token_down.length != 0) {
-        has_down_token = true;
-        document.getElementById("message").style.display = "none";
-        fud_vote_token_balance = (vote_token_down[0].balance * .1);
-        document.getElementById("fud-balance-current").innerText = fud_vote_token_balance
-        enableButtonsDown();
-    } else if (vote_token_down.length == 0) {
-        fud_vote_token_balance = 0;
-        document.getElementById("fud-balance-current").innerText = fud_vote_token_balance;
-        has_down_token = false;
-        disableButtonsDown();
-        document.getElementById("vote_token_1_down_button").title = 'Insufficent DDVT Balance';
-        document.getElementById("vote_token_2_down_button").title = 'Insufficent DDVT Balance';
-        document.getElementById("vote_token_3_down_button").title = 'Insufficent DDVT Balance';
-        document.getElementById("vote_token_4_down_button").title = 'Insufficent DDVT Balance';
-
-    }
-}
-//Start copy here for new card
-async function voteOne() {
-    //Make sure to change the voteamount1 to whatever number you need for the new card
-    if (voteamount1 == 0) {
-        alert("Please Enter Number of Votes");
-        return;
-    } else if (voteamount1 > vote_token_balance) {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Insufficent DvT in Wallet";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        return;
-    }
-    const tx = await Moralis.transfer({
-        type: "erc20",
-        amount: Moralis.Units.Token(voteamount1, "0"),
-        //Change the receiver address to the wallet that will be receiving the token
-        receiver: "0xF0858a63193f3958D42AC6d2fD21B84CEC5291C8",
-        contractAddress: "0x73Ae8e73cc8374a7e3A983637091624041E5B19D",
-        awaitReceipt: false
-    });
-    document.getElementById("message").innerText = "Submitting Vote...";
-    tx.on("error", (error) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Vote Failed";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-    });
-    tx.on("receipt", (receipt) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").style.color = "green";
-        document.getElementById("message").innerText = "Vote Successful!";
-        updatingBalancesText();
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        document.getElementById("message").style.color = "white";
-        setTimeout(() => { tokenCheck(); }, 2000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { tokenCheck(); }, 5000);
-    });
-}
-//Stop copy here
-async function voteTwo() {
-    if (voteamount2 == 0) {
-        alert("Please Enter Number of Votes");
-        return;
-    } else if (voteamount2 > vote_token_balance) {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Insufficent DvT in Wallet";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        return;
-    }
-    const tx = await Moralis.transfer({
-        type: "erc20",
-        amount: Moralis.Units.Token(voteamount2, "0"),
-        receiver: "0x26F4C1C79dA2db3E298053B1416089783A796c70",
-        contractAddress: "0x73Ae8e73cc8374a7e3A983637091624041E5B19D",
-        awaitReceipt: false
-    });
-    document.getElementById("message").innerText = "Submitting Vote...";
-    tx.on("error", (error) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Vote Failed";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-    });
-    tx.on("receipt", (receipt) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").style.color = "green";
-        document.getElementById("message").innerText = "Vote Successful!";
-        updatingBalancesText();
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        document.getElementById("message").style.color = "white";
-        setTimeout(() => { tokenCheck(); }, 2000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { tokenCheck(); }, 5000);
-    });
-}
-
-async function voteThree() {
-    if (voteamount3 == 0) {
-        alert("Please Enter Number of Votes");
-        return;
-    } else if (voteamount3 > vote_token_balance) {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Insufficent DvT in Wallet";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        return;
-    }
-    const tx = await Moralis.transfer({
-        type: "erc20",
-        amount: Moralis.Units.Token(voteamount3, "0"),
-        receiver: "0xecbA00776aA154B3c05486badB0AE2d08B865d04",
-        contractAddress: "0x73Ae8e73cc8374a7e3A983637091624041E5B19D",
-        awaitReceipt: false
-    });
-    tx.on("error", (error) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Vote Failed";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-    });
-    tx.on("receipt", (receipt) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").style.color = "green";
-        document.getElementById("message").innerText = "Vote Successful!";
-        updatingBalancesText();
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        document.getElementById("message").style.color = "white";
-        setTimeout(() => { tokenCheck(); }, 2000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { tokenCheck(); }, 5000);
-    });
-    //Paste here for new card
-
-}
-
-//Start copy here for new card
-async function voteFour() {
-    //Make sure to change the voteamount1 to whatever number you need for the new card
-    if (voteamount4 == 0) {
-        alert("Please Enter Number of Votes");
-        return;
-    } else if (voteamount4 > vote_token_balance) {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Insufficent DvT in Wallet";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        return;
-    }
-    const tx = await Moralis.transfer({
-        type: "erc20",
-        amount: Moralis.Units.Token(voteamount4, "0"),
-        //Change the receiver address to the wallet that will be receiving the token
-        receiver: "0xb6dAEc6f33C26fC6Da7b42cd935475dF5a04f1c3",
-        contractAddress: "0x73Ae8e73cc8374a7e3A983637091624041E5B19D",
-        awaitReceipt: false
-    });
-    document.getElementById("message").innerText = "Submitting Vote...";
-    tx.on("error", (error) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Vote Failed";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-    });
-    tx.on("receipt", (receipt) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").style.color = "green";
-        document.getElementById("message").innerText = "Vote Successful!";
-        updatingBalancesText();
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        document.getElementById("message").style.color = "white";
-        setTimeout(() => { tokenCheck(); }, 2000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { tokenCheck(); }, 5000);
-    });
-}
-async function voteOneDown() {
-    //Make sure to change the voteamount1 to whatever number you need for the new card
-    if (voteamount1 == 0) {
-        alert("Please Enter Number of Votes");
-        return;
-    } else if (voteamount1 > fud_vote_token_balance) {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Insufficent DDvT in Wallet";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        return;
-    }
-    const tx = await Moralis.transfer({
-        type: "erc20",
-        amount: Moralis.Units.Token(voteamount1, "1"),
-        //Change the receiver address to the wallet that will be receiving the token
-        receiver: "0xF0858a63193f3958D42AC6d2fD21B84CEC5291C8",
-        contractAddress: "0x85998a72274fc3639d2367c49b426c1Ab3BE86A8",
-        awaitReceipt: false
-    });
-    document.getElementById("message").innerText = "Submitting Vote...";
-    tx.on("error", (error) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Vote Failed";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-    });
-    tx.on("receipt", (receipt) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").style.color = "green";
-        document.getElementById("message").innerText = "Vote Successful!";
-        updatingBalancesText();
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        document.getElementById("message").style.color = "white";
-        setTimeout(() => { tokenCheck(); }, 2000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { tokenCheck(); }, 5000);
-    });
-}
-//Stop copy here
-async function voteTwoDown() {
-    if (voteamount2 == 0) {
-        alert("Please Enter Number of Votes");
-        return;
-    } else if (voteamount2 > fud_vote_token_balance) {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Insufficent DDvT in Wallet";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        return;
-    }
-    const tx = await Moralis.transfer({
-        type: "erc20",
-        amount: Moralis.Units.Token(voteamount2, "1"),
-        receiver: "0x26F4C1C79dA2db3E298053B1416089783A796c70",
-        contractAddress: "0x85998a72274fc3639d2367c49b426c1Ab3BE86A8",
-        awaitReceipt: false
-    });
-    document.getElementById("message").innerText = "Submitting Vote...";
-    tx.on("error", (error) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Vote Failed";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-    });
-    tx.on("receipt", (receipt) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").style.color = "green";
-        document.getElementById("message").innerText = "Vote Successful!";
-        updatingBalancesText();
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        document.getElementById("message").style.color = "white";
-        setTimeout(() => { tokenCheck(); }, 2000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { tokenCheck(); }, 5000);
-    });
-}
-
-async function voteThreeDown() {
-    if (voteamount3 == 0) {
-        alert("Please Enter Number of Votes");
-        return;
-    } else if (voteamount3 > fud_vote_token_balance) {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Insufficent DDvT in Wallet";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        return;
-    }
-    const tx = await Moralis.transfer({
-        type: "erc20",
-        amount: Moralis.Units.Token(voteamount3, "1"),
-        receiver: "0xecbA00776aA154B3c05486badB0AE2d08B865d04",
-        contractAddress: "0x85998a72274fc3639d2367c49b426c1Ab3BE86A8",
-        awaitReceipt: false
-    });
-    tx.on("error", (error) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Vote Failed";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-    });
-    tx.on("receipt", (receipt) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").style.color = "green";
-        document.getElementById("message").innerText = "Vote Successful!";
-        updatingBalancesText();
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        document.getElementById("message").style.color = "white";
-        setTimeout(() => { tokenCheck(); }, 2000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { tokenCheck(); }, 5000);
-    });
-    //Paste here for new card
-
-}
-
-//Start copy here for new card
-async function voteFourDown() {
-    //Make sure to change the voteamount1 to whatever number you need for the new card
-    if (voteamount4 == 0) {
-        alert("Please Enter Number of Votes");
-        return;
-    } else if (voteamount4 > fud_vote_token_balance) {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Insufficent DDvT in Wallet";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        return;
-    }
-    const tx = await Moralis.transfer({
-        type: "erc20",
-        amount: Moralis.Units.Token(voteamount4, "1"),
-        //Change the receiver address to the wallet that will be receiving the token
-        receiver: "0xb6dAEc6f33C26fC6Da7b42cd935475dF5a04f1c3",
-        contractAddress: "0x85998a72274fc3639d2367c49b426c1Ab3BE86A8",
-        awaitReceipt: false
-    });
-    document.getElementById("message").innerText = "Submitting Vote...";
-    tx.on("error", (error) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").innerText = "Vote Failed";
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-    });
-    tx.on("receipt", (receipt) => {
-        scroll(0, 0);
-        document.getElementById("message").style.display = "block";
-        document.getElementById("message").style.color = "green";
-        document.getElementById("message").innerText = "Vote Successful!";
-        updatingBalancesText();
-        setTimeout(() => { document.getElementById("message").style.display = "none"; }, 10000);
-        document.getElementById("message").style.color = "white";
-        setTimeout(() => { tokenCheck(); }, 2000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { getVoteBalances(); }, 5000);
-        setTimeout(() => { tokenCheck(); }, 5000);
-    });
-}
-async function getVoteBalances() {
-    //Vote Token Balances
-    let balances1 = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc', address: "0xF0858a63193f3958D42AC6d2fD21B84CEC5291C8" });
-    result1 = balances1.filter(function(e) {
-        return e.token_address == 0x73Ae8e73cc8374a7e3A983637091624041E5B19D;
-    });
-    let balances2 = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc', address: "0x26F4C1C79dA2db3E298053B1416089783A796c70" });
-    result2 = balances2.filter(function(f) {
-        return f.token_address == 0x73Ae8e73cc8374a7e3A983637091624041E5B19D;
-    });
-    await wait(1000);
-    let balances3 = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc', address: "0xecbA00776aA154B3c05486badB0AE2d08B865d04" });
-    result3 = balances3.filter(function(g) {
-        return g.token_address == 0x73Ae8e73cc8374a7e3A983637091624041E5B19D;
-    });
-    let balances4 = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc', address: "0xb6dAEc6f33C26fC6Da7b42cd935475dF5a04f1c3" });
-    result4 = balances4.filter(function(h) {
-        return h.token_address == 0x73Ae8e73cc8374a7e3A983637091624041E5B19D;
-    });
-
-    await wait(1000);
-    //Downvote Token Balances
-    let balancesDown1 = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc', address: "0xF0858a63193f3958D42AC6d2fD21B84CEC5291C8" });
-    resultDown1 = balancesDown1.filter(function(j) {
-        return j.token_address == 0x85998a72274fc3639d2367c49b426c1Ab3BE86A8;
-    });
-    let balancesDown2 = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc', address: "0x26F4C1C79dA2db3E298053B1416089783A796c70" });
-    resultDown2 = balancesDown2.filter(function(k) {
-        return k.token_address == 0x85998a72274fc3639d2367c49b426c1Ab3BE86A8;
-    });
-    await wait(1000);
-    let balancesDown3 = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc', address: "0xecbA00776aA154B3c05486badB0AE2d08B865d04" });
-    resultDown3 = balancesDown3.filter(function(l) {
-        return l.token_address == 0x85998a72274fc3639d2367c49b426c1Ab3BE86A8;
-    });
-    let balancesDown4 = await Moralis.Web3API.account.getTokenBalances({ chain: 'bsc', address: "0xb6dAEc6f33C26fC6Da7b42cd935475dF5a04f1c3" });
-    resultDown4 = balancesDown4.filter(function(z) {
-        return z.token_address == 0x85998a72274fc3639d2367c49b426c1Ab3BE86A8;
-    });
-    ///
-    if (result1.length == 1) {
-        document.getElementById("vote-token-1-count").innerText = (result1[0].balance);
-        result1Total = result1[0].balance;
-    } else {
-        document.getElementById("vote-token-1-count").innerText = "0";
-        result1Total = 0;
-    };
-    if (result2.length == 1) {
-        document.getElementById("vote-token-2-count").innerText = (result2[0].balance);
-        result2Total = result2[0].balance;
-    } else {
-        document.getElementById("vote-token-2-count").innerText = "0";
-        result2Total = 0;
-    };
-    if (result3.length == 1) {
-        document.getElementById("vote-token-3-count").innerText = (result3[0].balance);
-        result3Total = result3[0].balance;
-    } else {
-        document.getElementById("vote-token-3-count").innerText = "0";
-        result3Total = 0;
-    };
-    if (result4.length == 1) {
-        document.getElementById("vote-token-4-count").innerText = (result4[0].balance);
-    } else {
-        document.getElementById("vote-token-4-count").innerText = "0";
-        result4Total = 0;
-    };
-    ///
-    if (resultDown1.length == 1) {
-        document.getElementById("downvote-token-1-count").innerText = (resultDown1[0].balance * .1);
-        resultDown1Total = (resultDown1[0].balance * .1);
-    } else {
-        document.getElementById("downvote-token-1-count").innerText = "0";
-        resultDown1Total = 0;
-    };
-    if (resultDown2.length == 1) {
-        document.getElementById("downvote-token-2-count").innerText = (resultDown2[0].balance * .1);
-        resultDown2Total = (resultDown2[0].balance * .1);
-    } else {
-        document.getElementById("downvote-token-2-count").innerText = "0";
-        resultDown2Total = 0;
-    };
-    if (resultDown3.length == 1) {
-        document.getElementById("downvote-token-3-count").innerText = (resultDown3[0].balance * .1);
-        resultDown3Total = (resultDown3[0].balance * .1);
-    } else {
-        document.getElementById("downvote-token-3-count").innerText = "0";
-        resultDown3Total = 0;
-    };
-    if (resultDown4.length == 1) {
-        document.getElementById("downvote-token-4-count").innerText = (resultDown4[0].balance * .1);
-        resultDown4Total = (resultDown4[0].balance * .1);
-    } else {
-        document.getElementById("downvote-token-4-count").innerText = "0";
-        resultDown4Total = 0;
-    };
-    //Final Vote Count
-    if (resultDown1.length == 1 && result1.length == 1) {
-        document.getElementById("total-vote-count1").innerText = (result1[0].balance - (resultDown1[0].balance * .1));
-    } else {
-        document.getElementById("total-vote-count1").innerText = (result1Total - resultDown1Total);
-    };
-    if (resultDown2.length == 1 && result2.length == 1) {
-        document.getElementById("total-vote-count2").innerText = (result2[0].balance - (resultDown2[0].balance * .1));
-    } else {
-        document.getElementById("total-vote-count2").innerText = (result2Total - resultDown2Total);
-    };
-    if (resultDown3.length == 1 && result3.length == 1) {
-        document.getElementById("total-vote-count3").innerText = (result3[0].balance - (resultDown3[0].balance * .1));
-    } else {
-        document.getElementById("total-vote-count3").innerText = (result3Total - resultDown3Total);
-    };
-    if (resultDown4.length == 1 && result4.length == 1) {
-        document.getElementById("total-vote-count4").innerText = (result4[0].balance - (resultDown4[0].balance * .1));
-    } else {
-        document.getElementById("total-vote-count4").innerText = (result4Total - resultDown4Total);
-    };
-
-};
-
-function setVoteCount1() {
-    var votecount = document.getElementById("vote-count-input1");
-    voteCountValue = votecount.value;
-    voteamount1 = parseInt(voteCountValue);
-    console.log(voteamount1);
-}
-
-function setVoteCount2() {
-    var votecount = document.getElementById("vote-count-input2");
-    voteCountValue = votecount.value;
-    voteamount2 = parseInt(voteCountValue);
-    console.log(voteamount2);
-}
-
-function setVoteCount3() {
-    var votecount = document.getElementById("vote-count-input3");
-    voteCountValue = votecount.value;
-    voteamount3 = parseInt(voteCountValue);
-    console.log(voteamount3);
-}
-
-function setVoteCount4() {
-    var votecount = document.getElementById("vote-count-input4");
-    voteCountValue = votecount.value;
-    voteamount4 = parseInt(voteCountValue);
-    console.log(voteamount4);
-}
-
-function copyToClipboard(element) {
-    var $temp = $("<input>");
-    $("body").append($temp);
-    $temp.val($(element).text()).select();
-    document.execCommand("copy");
-    $temp.remove();
+function setNFTCount() {
+    var nftCount = document.getElementById("vote-count-input1");
+    nftCountValue = nftCount.value;
+    nftMintCount = parseInt(nftCountValue);
+    document.getElementById("estimated-cost").innerText = (nftMintCount * .05).toFixed(2) + " BNB + " + "Gas";
 }
 
 function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function updatingBalancesText() {
-    document.getElementById("vote-token-1-count").innerText = "Updating Balances...";
-    document.getElementById("vote-token-2-count").innerText = "Updating Balances...";
-    document.getElementById("vote-token-3-count").innerText = "Updating Balances...";
-    document.getElementById("vote-token-4-count").innerText = "Updating Balances...";
-    getVoteBalances;
+async function mintNFT() {
+    try {
+        if (nftMintCount * .05 > bnbBalance) {
+            document.getElementById("view-tx").style.fontWeight = 600;
+            document.getElementById("view-tx").style.color = '#4a0d0d';
+            document.getElementById("view-tx").innerText = "Insufficent BNB Balance";
+            return;
+        }
+        if (nftMintCount == 0) {
+            document.getElementById("view-tx").style.fontWeight = 600;
+            document.getElementById("view-tx").style.color = '#4a0d0d';
+            document.getElementById("view-tx").innerText = "Please enter an amount";
+            return;
+        } else {
+            const options = {
+                contractAddress: "0xFB024c47abf992CC41Ac8D45c0b9BfB2493Ff779",
+                functionName: "purchase",
+                abi: ABI,
+                params: {
+                    _amount: nftMintCount
+                },
+                msgValue: Moralis.Units.ETH(nftMintCount * .05),
+            };
+            loading();
+            const transaction = await Moralis.executeFunction(options);
+            const receipt = await transaction;
+            console.log(receipt);
+            txhash = receipt.transactionHash;
+            txHistory();
+            getBNBBalance();
+            getNFTAmounts();
+            remainingNFT();
+        }
+    } catch (error) {
+        if (error.code == 4001) {
+            document.getElementById("view-tx").innerHTML = "<span style='color:black' > Transaction Denied </span>";
+            getBNBBalance();
+            getNFTAmounts();
+        }
+    }
 }
 
-//function openModal() {
-//document.getElementById("modal"). = "block";
-//}
+async function getBNBBalance() {
+    const options2 = {
+        chain: "bsc",
+    };
+    const balance = await Moralis.Web3API.account.getNativeBalance(options2);
+    bnbBalanceValue = (balance.balance / 10 ** 18);
+    bnbBalance = bnbBalanceValue;
+    document.getElementById("dvt-balance-current").innerText = bnbBalance.toFixed(6);
+}
 
-//function closeModal() {
-//    document.getElementById("token_modal").style.display = "none";
-//}
+function txHistory() {
+    var url = "https://bscscan.com/tx/";
+    var tId = txhash;
+    document.getElementById("view-tx").innerHTML = "Success! <a href='" + url + tId + "' class='txhistory' target='_blank'>" + "View Last Transaction" + "</a> ";
+}
 
-//function txistory() {
-//    var url = "https://bscscan.com/tx/";
-//    var tId = rtest.transactionHash;
-//    document.getElementById("test3").innerHTML = " <a href='" + url + tId + "'>" + "View Transaction" + "</a> ";
-//}
+let slideIndex = 0;
+showSlides();
+
+function showSlides() {
+    let i;
+    let slides = document.getElementsByClassName("mySlides");
+    for (i = 0; i < slides.length; i++) {
+        slides[i].style.display = "none";
+    }
+    slideIndex++;
+    if (slideIndex > slides.length) { slideIndex = 1 }
+    slides[slideIndex - 1].style.display = "block";
+    setTimeout(showSlides, 9000); // Change image every 8 seconds
+}
+
+async function getNFTAmounts() {
+
+    let nftBalances = await await Moralis.Web3API.account.getNFTs({ chain: "bsc" });
+
+    nftBalancesFilter = nftBalances.result.filter(function(e) {
+        return e.token_address == 0xda88ce3f3c71d084de14a611cf47df8af47269b0;
+    });
+
+    let token1Check = nftBalancesFilter.filter(function(f) {
+        return f.token_id == 1;
+    });
+
+    let token2Check = nftBalancesFilter.filter(function(g) {
+        return g.token_id == 2;
+    });
+
+    let token3Check = nftBalancesFilter.filter(function(h) {
+        return h.token_id == 3;
+    });
+
+    let token4Check = nftBalancesFilter.filter(function(i) {
+        return i.token_id == 4;
+    });
+
+    if (token1Check.length >= 1) {
+        document.getElementById("nftamount1").innerText = (token1Check[0].amount);
+    } else {
+        document.getElementById("nftamount1").innerText = "0";
+    };
+    if (token2Check.length >= 1) {
+        document.getElementById("nftamount2").innerText = (token2Check[0].amount);
+    } else {
+        document.getElementById("nftamount2").innerText = "0";
+    };
+    if (token3Check.length >= 1) {
+        document.getElementById("nftamount3").innerText = (token3Check[0].amount);
+    } else {
+        document.getElementById("nftamount3").innerText = "0";
+    };
+    if (token4Check.length >= 1) {
+        document.getElementById("nftamount4").innerText = (token4Check[0].amount);
+    } else {
+        document.getElementById("nftamount4").innerText = "0";
+    };
+
+};
+
+async function remainingNFT() {
+
+    const options5 = {
+        chain: "bsc",
+        address: "0xFB024c47abf992CC41Ac8D45c0b9BfB2493Ff779",
+        function_name: "totalSupply",
+        abi: ABI,
+    };
+
+    const nftRemain = await Moralis.Web3API.native.runContractFunction(options5);
+    document.getElementById("remainingNFT").innerText = nftRemain;
+}
+
+function clearAmounts() {
+    document.getElementById("nftamount1").innerText = "Sign in to view";
+    document.getElementById("nftamount2").innerText = "Sign in to view";
+    document.getElementById("nftamount3").innerText = "Sign in to view";
+    document.getElementById("nftamount4").innerText = "Sign in to view";
+};
+
+function loading() {
+    document.getElementById("nftamount1").innerHTML = "<img src=\"https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg\">";
+    document.getElementById("nftamount2").innerHTML = "<img src=\"https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg\">";
+    document.getElementById("nftamount3").innerHTML = "<img src=\"https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg\">";
+    document.getElementById("nftamount4").innerHTML = "<img src=\"https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg\">";
+    document.getElementById("dvt-balance-current").innerHTML = "<img src=\"https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg\">";
+    document.getElementById("remainingNFT").innerHTML = "<img src=\"https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg\">";
+};
+
+const ABI = [{ "inputs": [{ "internalType": "address", "name": "_dbtNFT", "type": "address" }], "stateMutability": "nonpayable", "type": "constructor" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "previousOwner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "newOwner", "type": "address" }], "name": "OwnershipTransferred", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "internalType": "address", "name": "account", "type": "address" }], "name": "Paused", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "bytes32", "name": "role", "type": "bytes32" }, { "indexed": true, "internalType": "bytes32", "name": "previousAdminRole", "type": "bytes32" }, { "indexed": true, "internalType": "bytes32", "name": "newAdminRole", "type": "bytes32" }], "name": "RoleAdminChanged", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "bytes32", "name": "role", "type": "bytes32" }, { "indexed": true, "internalType": "address", "name": "account", "type": "address" }, { "indexed": true, "internalType": "address", "name": "sender", "type": "address" }], "name": "RoleGranted", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "bytes32", "name": "role", "type": "bytes32" }, { "indexed": true, "internalType": "address", "name": "account", "type": "address" }, { "indexed": true, "internalType": "address", "name": "sender", "type": "address" }], "name": "RoleRevoked", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "internalType": "address", "name": "account", "type": "address" }], "name": "Unpaused", "type": "event" }, { "inputs": [], "name": "DEFAULT_ADMIN_ROLE", "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "MAX_FEE", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "SUPPLIER_ROLE", "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "dbtNFT", "outputs": [{ "internalType": "contract IERC1155", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "devPercent", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "devWallet", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "getAllTokens", "outputs": [{ "internalType": "uint256[]", "name": "", "type": "uint256[]" }, { "internalType": "uint256[]", "name": "", "type": "uint256[]" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "bytes32", "name": "role", "type": "bytes32" }], "name": "getRoleAdmin", "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "bytes32", "name": "role", "type": "bytes32" }, { "internalType": "address", "name": "account", "type": "address" }], "name": "grantRole", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "bytes32", "name": "role", "type": "bytes32" }, { "internalType": "address", "name": "account", "type": "address" }], "name": "hasRole", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "", "type": "address" }, { "internalType": "address", "name": "", "type": "address" }, { "internalType": "uint256[]", "name": "", "type": "uint256[]" }, { "internalType": "uint256[]", "name": "", "type": "uint256[]" }, { "internalType": "bytes", "name": "", "type": "bytes" }], "name": "onERC1155BatchReceived", "outputs": [{ "internalType": "bytes4", "name": "", "type": "bytes4" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "", "type": "address" }, { "internalType": "address", "name": "", "type": "address" }, { "internalType": "uint256", "name": "", "type": "uint256" }, { "internalType": "uint256", "name": "", "type": "uint256" }, { "internalType": "bytes", "name": "", "type": "bytes" }], "name": "onERC1155Received", "outputs": [{ "internalType": "bytes4", "name": "", "type": "bytes4" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "onetimeLimit", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "owner", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "ownerWallet", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "pause", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "paused", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "price", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_amount", "type": "uint256" }], "name": "purchase", "outputs": [{ "internalType": "uint256[]", "name": "", "type": "uint256[]" }], "stateMutability": "payable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "", "type": "address" }], "name": "purchased", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "renounceOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "bytes32", "name": "role", "type": "bytes32" }, { "internalType": "address", "name": "account", "type": "address" }], "name": "renounceRole", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "bytes32", "name": "role", "type": "bytes32" }, { "internalType": "address", "name": "account", "type": "address" }], "name": "revokeRole", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_percent", "type": "uint256" }], "name": "setDevPercent", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_limit", "type": "uint256" }], "name": "setOnetimeLimit", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_price", "type": "uint256" }], "name": "setPrice", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "_account", "type": "address" }, { "internalType": "bool", "name": "_flag", "type": "bool" }], "name": "setSupplier", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "_owner", "type": "address" }, { "internalType": "address", "name": "_dev", "type": "address" }], "name": "setWallets", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "name": "supplies", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_id", "type": "uint256" }, { "internalType": "uint256", "name": "_amount", "type": "uint256" }], "name": "supply", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }], "name": "supportsInterface", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "totalSupply", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "newOwner", "type": "address" }], "name": "transferOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "unpause", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_id", "type": "uint256" }, { "internalType": "uint256", "name": "_amount", "type": "uint256" }], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "stateMutability": "payable", "type": "receive" }]
+
 
 init();
-getVoteBalances();
-tokenCheck();
+remainingNFT();
 
-//document.getElementById("modal_close").onclick = closeModal;
-
-//This what faciliates the links between the HTML buttons and the javascript functions, uncomment or add/remove as needed when you add new cards in the HTML
-document.getElementById("lg").onclick = logOut;
 document.getElementById("login_button").onclick = login;
 document.getElementById("login_button_wc").onclick = loginWC;
-document.getElementById("vote_token_1_button").onclick = voteOne;
-document.getElementById("vote_token_2_button").onclick = voteTwo;
-document.getElementById("vote_token_3_button").onclick = voteThree;
-document.getElementById("vote_token_4_button").onclick = voteFour;
-document.getElementById("vote_token_1_down_button").onclick = voteOneDown;
-document.getElementById("vote_token_2_down_button").onclick = voteTwoDown;
-document.getElementById("vote_token_3_down_button").onclick = voteThreeDown;
-document.getElementById("vote_token_4_down_button").onclick = voteFourDown;
-document.getElementById("vote-count-input1").oninput = setVoteCount1;
-document.getElementById("vote-count-input2").oninput = setVoteCount2;
-document.getElementById("vote-count-input3").oninput = setVoteCount3;
-document.getElementById("vote-count-input4").oninput = setVoteCount4;
+document.getElementById("vote_token_1_button").onclick = mintNFT;
+document.getElementById("vote-count-input1").oninput = setNFTCount;

@@ -8,14 +8,14 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
-    <title>DiscoBurn DvT DApp</title>
+    <title>DiscoBurn NFT DApp</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" inte0xe907e365c5bc5008d14ef5df08b31d7bbba3b171grity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/moralis@0.0.184/dist/moralis.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+    <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="https://discoburntoken.com/wp-content/uploads/2021/11/cropped-DiscoBall.png">
     <link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet'>
     <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
@@ -34,8 +34,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="https://discoburntoken.com/" id="lg"><span class="sr-only">(current)</span></a>
-                </li>-
+                </li>
             </ul>
             <!--<div class="Sign-in-Div" style="width: 100%;">-->
             <button id="login_button" class="bubbly-button1" type="submit">
@@ -50,184 +49,136 @@
             <p id="current-wallet">Not Logged in</p>
         </div>
         <div class="dvt-balance">
-            <label for="dvt-balance-current">Vote Balance:</label>
+            <label for="dvt-balance-current">BNB Balance:</label>
             <p id="dvt-balance-current"></p>
-        </div>
-        <div class="dvt-balance">
-            <label for="fud-balance-current">Downvote Balance:</label>
-            <p id="fud-balance-current"></p>
         </div>
     </div>
     <div id="message" class="message_box">
     </div>
     <div class="vote-container">
         <div class="swapboxwindow" id="window">
+            <div>
+                <h1>Why Mint a DBT NFT?</h1>
+
+                <p>There are 4 trading cards commemorating the 4 Season 1 Finalists of the Burn Party. There are only 20 NFTs for the winner of the Season: Wanderlust. </p>
+
+                <p>You want to complete the set. 1 Wanderlust, 1 Cryptoblast, 1 Affinity, and 1 Mr. Shillz. </p>
+
+                <p>For holders who hold all 4 projects in 1 wallet, each will be entered into a flash staking pool for 15 days with a pool of 400K DBT Tokens. Your wallet will be whitelisted for the pool, and you can stake your DBT tokens to earn rewards
+                    in this exclusive staking pool.</p>
+
+                <p>GRAND PRIZE: 1 winner will be randomly selected from the staking pool to forever be exempt from taxes when buying or selling DBT.</p>
+
+                GRAND PRIZE TERMS: Exemption from taxes is a privilege and can be revoked at any time. The benefits of tax-free trading is intended for personal use. The whitelisted wallet will be monitored for transactions and the DBT C-Level team has the authority
+                to remove the wallet from the whitelist if suspicious activity is observed without notice to the wallet holder.
+
+                <p>Happy Minting!</p>
+            </div>
+
+        </div>
+        <div class="swapboxwindow" id="window">
             <div class="vote-tokentitle">
                 Token 1
             </div>
-            <div class="vote-token-icon">
-                <a href="http://metarcade.io/" target="_blank"> <img src="https://discoburntoken.com/wp-content/uploads/2022/03/metarcade-e1647977480987.png" alt="Token 1 Icon"></a>
-            </div>
-            <div class="vote-token-sublink">
-                <span class='vote-token-sublink-icon1'><a href="https://twitter.com/metarcade" target="_blank"><img src='https://discoburntoken.com/wp-content/uploads/2021/12/Twitter_small.png'></a></span>
-                <span class='vote-token-sublink-icon2'><a href="https://t.me/metarcadeofficial" target="_blank"><img src='https://discoburntoken.com/wp-content/uploads/2021/12/Telegram_small3.png'></a></span>
-            </div>
-            <div class="vote-count">
-                <div class="vote-token-cv">
-                    Current Votes:
+            <div class="slideshow-container">
+
+                <!-- Full-width images with number and caption text -->
+                <div class="mySlides fade">
+                    <div class="numbertext">1 / 4</div>
+                    <img src="https://discoburntoken.com/wp-content/uploads/2022/05/ezgif-3-c7a41c8b24.gif" style="width:100%">
+                    <div class="text">CryptoBlast</div>
                 </div>
-                <div class="vote-count-container-vc">
-                    <p>Upvotes:</p>
-                    <a id="vote-token-1-count"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg" alt="funny animation GIF"></a>
+
+                <div class="mySlides fade">
+                    <div class="numbertext">2 / 4</div>
+                    <img src="https://discoburntoken.com/wp-content/uploads/2022/05/ezgif-3-713dcb1595.gif" style="width:100%">
+                    <div class="text">Mr. Shillz</div>
                 </div>
-                <div class="vote-count-container-vc">
-                    <p>Downvotes:</p>
-                    <a id="downvote-token-1-count"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg" alt="funny animation GIF"></a>
+
+                <div class="mySlides fade">
+                    <div class="numbertext">3 / 4</div>
+                    <img src="https://discoburntoken.com/wp-content/uploads/2022/05/ezgif-3-7409937eee.gif" style="width:100%">
+                    <div class="text">Affinity</div>
                 </div>
-                <div class="vote-count-container">
-                    <p>Vote Total:</p>
-                    <a id="total-vote-count1"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-35px-1.svg" alt="funny animation GIF"></a>
+
+                <div class="mySlides fade">
+                    <div class="numbertext">4 / 4</div>
+                    <img src="https://discoburntoken.com/wp-content/uploads/2022/05/ezgif-3-f134370bd2.gif" style="width:100%">
+                    <div class="text">Wanderlust</div>
                 </div>
+
             </div>
-            <div class="vote-count-input-container">
-                <label for="vote-count-input1">Votes to Send:</label>
-                <input class="vote-count-input" type="number" size="1" id="vote-count-input1" name="Vote Count Input" placeholder="#" autocomplete="off" style="outline: none;">
-            </div>
-            <div class="vote-button-container-new">
-                <button id="vote_token_1_button" title="Please Sign-in to Enable Voting" class="vote-button-new" style="outline: none;"></button>
-                <button id="vote_token_1_down_button" title="Please Sign-in to Enable Voting" class="vote-button-new-down" style="outline: none;"></button>
-            </div>
-            <div class="walletaddress-container">
-                <p class="walletaddress-address" id="walletaddress1">0xF0858a63193f3958D42AC6d2fD21B84CEC5291C8</p>
-                <button onclick="copyToClipboard('#walletaddress1')" id="copy-wallet-address1" class="copy-address" title="Copy Wallet Address">Copy Wallet Address</button>
+            <br>
+
+            <div class="remainNFT">
+                <p>Remaining Supply: <span id="remainingNFT"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg"></span> / 500</p>
             </div>
 
-        </div>
-        <div class="swapboxwindow" id="window">
-            <div class="vote-tokentitle">
-                Token 2
-            </div>
-            <div class="vote-token-icon">
-                <a href="https://whexcosystem.com/whex.html" target="_blank"><img src="https://discoburntoken.com/wp-content/uploads/2022/02/WhaleExploder.png" alt="Token 1 Icon"></a>
-            </div>
-            <div class="vote-token-sublink">
-                <span class='vote-token-sublink-icon1'><a href="https://twitter.com/WhaleExploder" target="_blank"><img src='https://discoburntoken.com/wp-content/uploads/2021/12/Twitter_small.png'></a></span>
-                <span class='vote-token-sublink-icon2'><a href="https://t.me/WhaleExploderChat" target="_blank"><img src='https://discoburntoken.com/wp-content/uploads/2021/12/Telegram_small3.png'></a></span>
-            </div>
-            <div class="vote-count">
-                <div class="vote-token-cv">
-                    Current Votes:
-                </div>
-                <div class="vote-count-container-vc">
-                    <p>Upvotes:</p>
-                    <a id="vote-token-2-count"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg" alt="funny animation GIF"> </a>
-                </div>
-                <div class="vote-count-container-vc">
-                    <p>Downvotes:</p>
-                    <a id="downvote-token-2-count"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg" alt="funny animation GIF"></a>
-                </div>
-                <div class="vote-count-container">
-                    <p>Vote Total:</p>
-                    <a id="total-vote-count2"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-35px-1.svg" alt="funny animation GIF"></a>
-                </div>
+            <div class="vote-count-input-container">
+                <label for="vote-count-input1">Number of NFTs to Mint:</label>
+                <input class="vote-count-input" type="number" size="1" min="0" id="vote-count-input1" name="Vote Count Input" placeholder="#" autocomplete="off" style="outline: none;">
             </div>
             <div class="vote-count-input-container">
-                <label for="vote-count-input2">Votes to Send:</label>
-                <input class="vote-count-input" type="number" id="vote-count-input2" name="Vote Count Input" placeholder="#" size="1" autocomplete="off" style="outline: none;">
-            </div>
-            <div class="vote-button-container-new">
-                <button id="vote_token_2_button" title="Please Sign-in to Enable Voting" class="vote-button-new" style="outline: none;"></button>
-                <button id="vote_token_2_down_button" title="Please Sign-in to Enable Voting" class="vote-button-new-down" style="outline: none;"></button>
-            </div>
-            <div class="walletaddress-container">
-                <p class="walletaddress-address" id="walletaddress2">0x26F4C1C79dA2db3E298053B1416089783A796c70</p>
-                <button onclick="copyToClipboard('#walletaddress2')" id="copy-wallet-address2" class="copy-address" title="Copy Wallet Address">Copy Wallet Address</button>
-            </div>
-
-        </div>
-        <div class="swapboxwindow" id="window">
-            <div class="vote-tokentitle">
-                Token 3
-            </div>
-            <div class="vote-token-icon">
-                <a href="https://iwintoken.com/weniwin/" target="_blank"><img src="https://discoburntoken.com/wp-content/uploads/2022/03/weniwin.png" alt="Token 1 Icon"></a>
-            </div>
-            <div class="vote-token-sublink">
-                <span class='vote-token-sublink-icon1'><a href="https://twitter.com/iWinToken" target="_blank"><img src='https://discoburntoken.com/wp-content/uploads/2021/12/Twitter_small.png'></a></span>
-                <span class='vote-token-sublink-icon2'><a href="https://t.me/iWin_Token" target="_blank"><img src='https://discoburntoken.com/wp-content/uploads/2021/12/Telegram_small3.png'></a></span>
-            </div>
-            <div class="vote-count">
-                <div class="vote-token-cv">
-                    Current Votes:
-                </div>
-                <div class="vote-count-container-vc">
-                    <p>Upvotes:</p>
-                    <a id="vote-token-3-count"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg" alt="funny animation GIF"></a>
-                </div>
-                <div class="vote-count-container-vc">
-                    <p>Downvotes:</p>
-                    <a id="downvote-token-3-count"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg" alt="funny animation GIF"></a>
-                </div>
-                <div class="vote-count-container">
-                    <p>Vote Total:</p>
-                    <a id="total-vote-count3"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-35px-1.svg" alt="funny animation GIF"></a>
-                </div>
+                <label for="estimated-cost">Minting Fee:</label>
+                <p id="estimated-cost">0 BNB + Gas</p>
             </div>
             <div class="vote-count-input-container">
-                <label for="vote-count-input3">Votes to Send:</label>
-                <input class="vote-count-input" type="number" id="vote-count-input3" name="Vote Count Input" placeholder="#" size="1" autocomplete="off" style="outline: none;">
+                <p id="view-tx"></p>
             </div>
             <div class="vote-button-container-new">
-                <button id="vote_token_3_button" title="Please Sign-in to Enable Voting" class="vote-button-new" style="outline: none;"></button>
-                <button id="vote_token_3_down_button" title="Please Sign-in to Enable Voting" class="vote-button-new-down" style="outline: none;"></button>
-            </div>
-            <div class="walletaddress-container">
-                <p class="walletaddress-address" id="walletaddress3">0xecbA00776aA154B3c05486badB0AE2d08B865d04</p>
-                <button onclick="copyToClipboard('#walletaddress3')" id="copy-wallet-address3" class="copy-address" title="Copy Wallet Address">Copy Wallet Address</button>
+                <button id="vote_token_1_button" title="Please Sign-in to Mint NFTs" class="vote-button-new" style="outline: none;"></button>
             </div>
         </div>
         <div class="swapboxwindow" id="window">
-            <div class="vote-tokentitle">
-                Token 4
-            </div>
-            <div class="vote-token-icon">
-                <a href="https://hedgepay.org" target="_blank"><img src="https://discoburntoken.com/wp-content/uploads/2022/03/HedgePay-1024x1024-1.png" alt="Token 1 Icon"></a>
-            </div>
-            <div class="vote-token-sublink">
-                <span class='vote-token-sublink-icon1'><a href="https://twitter.com/HedgePay" target="_blank"><img src='https://discoburntoken.com/wp-content/uploads/2021/12/Twitter_small.png'></a></span>
-                <span class='vote-token-sublink-icon2'><a href="https://t.me/hedgepay" target="_blank"><img src='https://discoburntoken.com/wp-content/uploads/2021/12/Telegram_small3.png'></a></span>
-            </div>
-            <div class="vote-count">
-                <div class="vote-token-cv">
-                    Current Votes:
-                </div>
-                <div class="vote-count-container-vc">
-                    <p>Upvotes:</p>
-                    <a id="vote-token-4-count"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg" alt="funny animation GIF"></a>
-                </div>
-                <div class="vote-count-container-vc">
-                    <p>Downvotes:</p>
-                    <a id="downvote-token-4-count"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-25px-1.svg" alt="funny animation GIF"></a>
-                </div>
-                <div class="vote-count-container">
-                    <p>Vote Total:</p>
-                    <a id="total-vote-count4"><img src="https://discoburntoken.com/wp-content/uploads/2022/04/Rolling-1s-35px-1.svg" alt="funny animation GIF"></a>
-                </div>
-            </div>
-            <div class="vote-count-input-container">
-                <label for="vote-count-input4">Votes to Send:</label>
-                <input class="vote-count-input" type="number" id="vote-count-input4" name="Vote Count Input" placeholder="#" size="1" autocomplete="off" style="outline: none;">
-            </div>
-            <div class="vote-button-container-new">
-                <button id="vote_token_4_button" title="Please Sign-in to Enable Voting" class="vote-button-new" style="outline: none;"></button>
-                <button id="vote_token_4_down_button" title="Please Sign-in to Enable Voting" class="vote-button-new-down" style="outline: none;"></button>
-            </div>
-            <div class="walletaddress-container">
-                <p class="walletaddress-address" id="walletaddress4">0xb6dAEc6f33C26fC6Da7b42cd935475dF5a04f1c3</p>
-                <button onclick="copyToClipboard('#walletaddress4')" id="copy-wallet-address4" class="copy-address" title="Copy Wallet Address">Copy Wallet Address</button>
-            </div>
-        </div>
+            <h1>Your DBT NFT Collection:</h1>
 
+            <div class="collection">
+                <div class="collectionbox">
+                    <h2>Token 1 - CryptoBlast </h2>
+
+                    <p>View <a href="https://storageapi2.fleek.co/82fe97e9-75f8-4098-8249-59b097b6bfe7-bucket/animation/1.mp4" target="_blank">.MP4 </a>/<a href="https://storageapi2.fleek.co/82fe97e9-75f8-4098-8249-59b097b6bfe7-bucket/image/1.gif" target="_blank"> .GIF</a></p>
+
+                    <div class="countbox">
+                        <label for="nftamount1">Owned:</label>
+                        <p id="nftamount1">Sign in to view</p>
+                    </div>
+                </div>
+
+                <div class="collectionbox">
+                    <h2>Token 2 - Mr. Shillz </h2>
+
+                    <p>View <a href="https://storageapi2.fleek.co/82fe97e9-75f8-4098-8249-59b097b6bfe7-bucket/animation/2.mp4" target="_blank">.MP4 </a>/<a href="https://storageapi2.fleek.co/82fe97e9-75f8-4098-8249-59b097b6bfe7-bucket/image/2.gif" target="_blank"> .GIF</a></p>
+
+                    <div class="countbox">
+                        <label for="nftamount2">Owned:</label>
+                        <p id="nftamount2">Sign in to view</p>
+                    </div>
+                </div>
+
+                <div class="collectionbox">
+                    <h2>Token 3 - Affinity </h2>
+
+                    <p>View <a href="https://storageapi2.fleek.co/82fe97e9-75f8-4098-8249-59b097b6bfe7-bucket/animation/3.mp4" target="_blank">.MP4 </a>/<a href="https://storageapi2.fleek.co/82fe97e9-75f8-4098-8249-59b097b6bfe7-bucket/image/3.gif" target="_blank"> .GIF</a></p>
+
+                    <div class="countbox">
+                        <label for="nftamount3">Owned:</label>
+                        <p id="nftamount3">Sign in to view</p>
+                    </div>
+                </div>
+
+                <div class="collectionbox">
+                    <h2>Token 4 - Wanderlust </h2>
+
+                    <p>View <a href="https://storageapi2.fleek.co/82fe97e9-75f8-4098-8249-59b097b6bfe7-bucket/animation/4.mp4" target="_blank">.MP4 </a>/<a href="https://storageapi2.fleek.co/82fe97e9-75f8-4098-8249-59b097b6bfe7-bucket/image/4.gif" target="_blank"> .GIF</a></p>
+
+                    <div class="countbox">
+                        <label for="nftamount4">Owned:</label>
+                        <p id="nftamount4">Sign in to view</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
         <span class="stretch"></span>
     </div>
 
