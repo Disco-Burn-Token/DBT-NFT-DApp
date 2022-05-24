@@ -179,7 +179,7 @@ async function mintNFT() {
         if (error.code == 4001) {
             document.getElementById("view-tx").style.fontWeight = 600;
             document.getElementById("view-tx").style.color = '#4a0d0d';
-            document.getElementById("view-tx").innerText = "Transcation rejected in wallet";
+            document.getElementById("view-tx").innerText = "Transaction rejected in wallet";
             getBNBBalance();
             getNFTAmounts();
             remainingNFT();
