@@ -177,9 +177,12 @@ async function mintNFT() {
         }
     } catch (error) {
         if (error.code == 4001) {
-            document.getElementById("view-tx").innerHTML = "<span style='color:black' > Transaction Denied </span>";
+            document.getElementById("view-tx").style.fontWeight = 600;
+            document.getElementById("view-tx").style.color = '#4a0d0d';
+            document.getElementById("view-tx").innerText = "Transcation rejected in wallet";
             getBNBBalance();
             getNFTAmounts();
+            remainingNFT();
         }
     }
 }
