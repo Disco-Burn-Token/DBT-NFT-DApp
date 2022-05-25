@@ -721,6 +721,10 @@
                     margin-top: 10px;
                 }
                 
+                h1 {
+                    text-align: center;
+                }
+                
                 .collection {
                     text-align: center;
                     padding: 20px;
@@ -738,7 +742,6 @@
                     }
                     h1 {
                         font-size: 1.5rem;
-                        text-align: center;
                         text-decoration: underline;
                     }
                     .collection {
