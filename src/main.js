@@ -1,7 +1,7 @@
 //import * as helper from './w3Helper.js';
 
-const serverUrl = "https://bd6xpqfykho5.usemoralis.com:2053/server"; //Server url from moralis.io
-const appId = "s9hVE8SmoSVGqcdEyp6eQhQmbFBVXxmvoMLPEaAU"; // Application id from moralis.io
+const serverUrl = "https://2tt6ppngovgo.usemoralis.com:2053/server"; //Server url from moralis.io
+const appId = "pOqkhRCKUnbxtEYGrKkPKMKvAajaMsA6gtPlHw5K"; // Application id from moralis.io
 
 //This is being used to hold the Web3API namespace
 let token_obj;
@@ -9,6 +9,7 @@ let token_obj;
 //keeps track of if a user is logged in.
 let logged_in;
 
+var mmLogin;
 var nftMintCount = 0;
 
 var intervalId = window.setInterval(function() {
@@ -26,12 +27,13 @@ async function init() {
     //If User is logged in
     if (currentUser) {
         logged_in = true;
-        document.getElementById("login_button").innerText = "Logout";
+        document.getElementById("connect_button").style.display = "none";
+        document.getElementById("disconnect_button").style.display = "inline-block";
         userAddress = currentUser.get('ethAddress');
-        document.getElementById("current-wallet").innerText = "0x..." + userAddress.slice(38);
         setHelperData();
         console.log(global.user_profile.born);
-        document.getElementById("logged_in_info").style.display = "block";
+        document.getElementById("wallet_addr").innerText = "0x..." + userAddress.slice(38);
+        document.getElementById("wallet_addr_cont").style.display = "inline-block";
         loading();
         getBNBBalance();
         getNFTAmounts();
@@ -42,9 +44,8 @@ async function init() {
     //If user is not logged in
     else {
         logged_in = false;
-        document.getElementById("login_button").innerText = "Sign in with MetaMask";
-        document.getElementById("logged_in_info").style.display = "none";
         document.getElementById("vote_token_1_button").disabled = true;
+        document.getElementById("wallet_addr_cont").style.display = "none";
     }
 }
 
@@ -59,10 +60,14 @@ async function login() {
     try {
         currentUser = Moralis.User.current();
         if (!currentUser) {
-            document.getElementById("login_button").innerText = "Authenticating...";
             currentUser = await Moralis.authenticate();
             userAddress = currentUser.get('ethAddress');
-            document.getElementById("current-wallet").innerText = "0x..." + userAddress.slice(38);
+            closeWalletModal();
+            document.getElementById("connect_button").style.display = "none";
+            document.getElementById("disconnect_button").style.display = "inline-block";
+            document.getElementById("wallet_addr").innerText = "0x..." + userAddress.slice(38);
+            document.getElementById("wallet_addr_cont").style.display = "inline-block";
+            mmLogin = true;
             loading();
             getBNBBalance();
             getNFTAmounts();
@@ -73,34 +78,37 @@ async function login() {
         } else {
             logOut();
         }
-        document.getElementById("login_button").innerText = "Logout";
         document.getElementById("logged_in_info").style.display = "block";
         logged_in = true;
     } catch (error) {
         if (error.message == "MetaMask Message Signature: User denied message signature.") {
             alert("Login cancelled")
-            document.getElementById("login_button").innerText = "Sign in with Metamask";
         }
     }
 }
 async function logOut() {
     currentUser = await Moralis.User.logOut();
-    document.getElementById("login_button").innerText = "Sign in with Metamask";
-    document.getElementById("message").style.display = "none";
-    document.getElementById("logged_in_info").style.display = "none";
     document.getElementById("vote_token_1_button").disabled = true;
-    clearAmounts();
+    mmLogin = false;
     logged_in = false;
+    document.getElementById("vote_token_1_button").disabled = true;
+
+    clearAmounts();
 }
 
 async function loginWC() {
     try {
         currentUser = Moralis.User.current();
         if (!currentUser) {
-            document.getElementById("login_button_wc").innerText = "Authenticating...";
             currentUser = await Moralis.authenticate({ provider: "walletconnect", chainId: 56 });
             userAddress = currentUser.get('ethAddress');
-            document.getElementById("current-wallet").innerText = "0x..." + userAddress.slice(38);
+            closeWalletModal();
+            document.getElementById("connect_button").style.display = "none";
+            document.getElementById("disconnect_button").style.display = "inline-block";
+            userAddress = currentUser.get('ethAddress');
+            document.getElementById("wallet_addr").innerText = "0x..." + userAddress.slice(38);
+            document.getElementById("wallet_addr_cont").style.display = "inline-block";
+            wcLogin = true;
             loading();
             getBNBBalance();
             getNFTAmounts();
@@ -116,19 +124,37 @@ async function loginWC() {
     } catch (error) {
         if (error.message == "User closed modal") {
             alert("Login cancelled")
-            document.getElementById("login_button_wc").innerText = "Sign in with WalletConnect";
         }
     }
 }
 
 async function logOutWC() {
     currentUser = await Moralis.User.logOut();
-    document.getElementById("login_button_wc").innerText = "Sign in with WalletConnect";
-    document.getElementById("message").style.display = "none";
     document.getElementById("logged_in_info").style.display = "none";
     document.getElementById("vote_token_1_button").disabled = true;
     clearAmounts();
     logged_in = false;
+    wcLogin = false;
+}
+
+function openWalletModal() {
+    document.getElementById("wallet_modal").style.display = "block";
+}
+
+function closeWalletModal() {
+    document.getElementById("wallet_modal").style.display = "none";
+}
+
+function disconnect() {
+    if (mmLogin = true) {
+        logOut();
+    } else {
+        logOutWC();
+    }
+    document.getElementById("wallet_addr_cont").style.display = "none";
+    document.getElementById("disconnect_button").style.display = "none";
+    document.getElementById("connect_button").style.display = "inline-block";
+    document.getElementById("dvt-balance-current").innerText = "Not Logged In";
 }
 
 function setNFTCount() {
@@ -300,6 +326,9 @@ const ABI = [{ "inputs": [{ "internalType": "address", "name": "_dbtNFT", "type"
 init();
 remainingNFT();
 
+document.getElementById("connect_button").onclick = openWalletModal;
+document.getElementById("wallet_modal_close").onclick = closeWalletModal;
+document.getElementById("disconnect_button").onclick = disconnect;
 document.getElementById("login_button").onclick = login;
 document.getElementById("login_button_wc").onclick = loginWC;
 document.getElementById("vote_token_1_button").onclick = mintNFT;

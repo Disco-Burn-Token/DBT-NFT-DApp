@@ -21,40 +21,28 @@
     <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+    <style>
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333;
+        }
+    </style>
 </head>
 
 <body class="tmbg" style="background-image: url(https://discoburntoken.com/wp-content/uploads/2021/12/Blockchain-Background.jpg)">
     <!--Side Bar-->
-    <nav style="background-color: #bd28708e;" class="navbar navbar-expand-lg navbar-dark">
+    <ul style="background-color: #bd28708e;">
+        <li style="float:left"></li>>
         <a class="navbar-brand" href="https://discoburntoken.com/"><img src="https://discoburntoken.com/wp-content/uploads/2021/12/discoburn.png" class="navbar-brand-responsive_new" style='width: 100%;'></a>
-        <!--<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>-->
+        </li>
+        <li><button id="connect_button" class="bubbly-button" type="submit">Connect</button></li>
+        <li><button style="display:none" id="disconnect_button" class="bubbly-button" type="submit">Logout</button></li>
+        <li><button style="display:none" id="wallet_addr_cont" class="bubbly-button" type="submit">Wallet: <span id="wallet_addr"></span></button></li>
+    </ul>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                </li>
-            </ul>
-            <!--<div class="Sign-in-Div" style="width: 100%;">-->
-            <button id="login_button" class="bubbly-button1" type="submit">
-                    <span>Sign In with MetaMask</span>
-            </button>
-            <button id="login_button_wc" class="bubbly-button2" type="submit">Sign in with WalletConnect</button>
-        </div>
-    </nav>
-    <div id="logged_in_info" class="logged_in_info">
-        <div class="wallet-info">
-            <label for="current-wallet">Wallet:</label>
-            <p id="current-wallet">Not Logged in</p>
-        </div>
-        <div class="dvt-balance">
-            <label for="dvt-balance-current">BNB Balance:</label>
-            <p id="dvt-balance-current"></p>
-        </div>
-    </div>
-    <div id="message" class="message_box">
-    </div>
     <div class="vote-container">
         <div class="swapboxwindow" id="window">
             <div>
@@ -118,6 +106,12 @@
                 <label for="vote-count-input1">Number of NFTs to Mint:</label>
                 <input class="vote-count-input" type="number" size="1" min="0" id="vote-count-input1" name="Vote Count Input" placeholder="#" autocomplete="off" style="outline: none;">
             </div>
+            <div id="logged_in_info">
+                <div class="vote-count-input-container">
+                    <label for="dvt-balance-current">BNB Balance:</label>
+                    <p id="dvt-balance-current">Not Logged In</p>
+                </div>
+            </div>
             <div class="vote-count-input-container">
                 <label for="estimated-cost">Minting Fee:</label>
                 <p id="estimated-cost">0 BNB + Gas</p>
@@ -177,14 +171,35 @@
                     </div>
                 </div>
             </div>
-
+            <!--Wallet Select Modal-->
+            <div class="modal" id="wallet_modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="modal-header-text">
+                                Choose a Wallet Provider
+                            </div>
+                            <button id="wallet_modal_close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                        </div>
+                        <div class="wallet-modal-body">
+                            <div class="buttons">
+                                <button class="bubbly-button1" id="login_button" type="submit">Metamask</button>
+                                <br>
+                                <button class="bubbly-button2" id="login_button_wc" type="submit">WalletConnect</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <span class="stretch"></span>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.1.1.min.js " integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin=" anonymous "></script>
     <script src="semantic/dist/semantic.min.js "></script>
-    <script src="https://github.com/WalletConnect/walletconnect-monorepo/releases/download/1.7.1/web3-provider.min.js"></script>
+    <script src="https://github.com/WalletConnect/walletconnect-monorepo/releases/download/1.7.8/web3-provider.min.js"></script>
     <script src="src/main.js "></script>
     <script src="src/w3Helper.js "></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
