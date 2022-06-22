@@ -92,7 +92,6 @@ async function logOut() {
     mmLogin = false;
     logged_in = false;
     document.getElementById("vote_token_1_button").disabled = true;
-
     clearAmounts();
 }
 
@@ -118,8 +117,6 @@ async function loginWC() {
         } else {
             logOutWC();
         }
-        document.getElementById("login_button_wc").innerText = "Logout";
-        document.getElementById("logged_in_info").style.display = "block";
         logged_in = true;
     } catch (error) {
         if (error.message == "User closed modal") {
