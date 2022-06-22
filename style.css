@@ -80,6 +80,7 @@
                     display: inline-flex;
                     flex-wrap: wrap;
                     padding-bottom: 50px;
+                    margin-top: 5%;
                 }
                 
                 .vote-count-input-container {
