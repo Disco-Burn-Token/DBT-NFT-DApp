@@ -90,7 +90,7 @@
                 .vote-count-input {
                     border-radius: 30px;
                     text-align: center;
-                    border: revert;
+                    border: none;
                     background-color: #ffffffc2;
                     color: black;
                     font-family: 'Oswald';
